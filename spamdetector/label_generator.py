@@ -127,7 +127,7 @@ def jsonify(dictionary, path):
         json.dump(dictionary, p)
 
 
-def train_models(directory, spam_amount, all_amount, save_classifier=False):
+def train_models(directory, spam_amount, all_amount, save_classifier=True):
     train_dir = directory
     dictionary = read_lingspam_corpus(train_dir)
     print(dictionary)
@@ -143,10 +143,10 @@ def train_models(directory, spam_amount, all_amount, save_classifier=False):
     model2.fit(train_matrix, train_labels)
     # model_testing(model1, model2)
     if save_classifier:
+        with open('spam_dictionary.dat', 'w+b') as d:
+            pickle.dump(dictionary, d)
         joblib.dump(model1, 'spam_naive_bayes.pkl')
         joblib.dump(model2, 'spam_supported_vec_mach.pkl')
-        with open('spam_dictionary.dat', 'wb') as d:
-            pickle.dump(dictionary, d)
     return model1, model2, dictionary
 
 
@@ -163,13 +163,3 @@ def __model_testing(model1, model2, dictionary):
     print(confusion_matrix(test_labels, result2))
 
 
-if __name__ == '__main__':
-    bayes, svm, dictus = train_models('train-mails', 351, 702,
-                                      save_classifier=True)
-    message = process_message("Good Evening", "You won a gift")
-
-    vector = generate_testing_vector(message, dictus)
-    vector = vector.reshape(1, -1)
-    print(vector)
-    result = bayes.predict(vector)
-    print(result)
